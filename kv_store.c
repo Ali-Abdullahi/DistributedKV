@@ -12,16 +12,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define BUFSIZE 512
+#include "kv_store.h"
+
 #define LISTEN_QUEUE_LEN 5
-#define TABLE_SIZE 500
 
-typedef struct Node{
-    char *key;
-    char *val;
-    struct Node *next; //For collisions to hold more than one node at a specific array position
-} Node;   
 
+   
 Node *kvStore[TABLE_SIZE]= {NULL};
 
 unsigned int hash(char *key){
@@ -34,7 +30,6 @@ unsigned int hash(char *key){
 
 int keep_going = 1;
 
-pthread_rwlock_t rwlock;
 // int writers_waiting = 0; // Don't get reader locks if writers are waiting?
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 static const char *LOG_FILE = "server.log";

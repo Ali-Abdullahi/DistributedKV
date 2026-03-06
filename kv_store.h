@@ -14,5 +14,13 @@ typedef struct Node{
 extern Node *kvStore[TABLE_SIZE];
 extern pthread_rwlock_t rwlock;
 
+unsigned int hash(char *key);
+char * kvGet(const char * key);
+void kvPut(const char *key, const char *val);
+int kvDel(const char *key);
+
+void save_to_disk();
+void pull_from_disk();
+
 
 #endif
