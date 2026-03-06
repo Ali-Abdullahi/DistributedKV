@@ -32,4 +32,22 @@ unsigned int hash(char *key){
 }
 
 
+char* kvGet(const char *key) {
+    unsigned int idx = hash((char*)key);
+    char *result = NULL;
+
+    pthread_rwlock_rdlock(&rwlock);
+    Node *curr = kvStore[idx];
+    while(curr != NULL) {
+        if(strcmp(curr->key, key) == 0) {
+            result = strdup(curr->val);
+            break;
+        }
+        curr = curr->next;
+    }
+    pthread_rwlock_unlock(&rwlock);
+    
+    return result; 
+}
+
 
