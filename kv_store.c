@@ -50,4 +50,15 @@ char* kvGet(const char *key) {
     return result; 
 }
 
+void kvPut(const char *key, const char*val){
+    Node * newKV;
+    unsigned int idx = hash((char*)key);
+    Node *curr= kvStore[idx];
+    int checked=0;
+    while(curr != NULL){
+        
+    }
+
+}
+
 
