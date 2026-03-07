@@ -51,20 +51,21 @@ char* kvGet(const char *key) {
 }
 
 void kvPut(const char *key, const char*val){
-    Node * newKV;
     unsigned int idx = hash((char*)key);
-    Node *curr= kvStore[idx];
     int checked=0;
+    pthread_rwlock_wrlock(&rwlock);
+    
+    Node *curr= kvStore[idx];
     while(curr != NULL){
         if(strcmp(curr->key,key)==0){
             free(curr->val);
-            curr->val=stdup(val);
+            curr->val=strdup(val);
             checked=1;
             break;
         }
         curr= curr->next;
     }
-    
+
     if(checked!=1){
         Node * new_kv= malloc(sizeof(Node));
         new_kv->key=strdup(key); //Creates permanent copies of the data
@@ -72,6 +73,7 @@ void kvPut(const char *key, const char*val){
         new_kv->next= kvStore[idx]; //Points next to whatever is already at idx, so every new collision is at the beginning of the linked list.
         kvStore[idx]= new_kv;
     }
+     pthread_rwlock_unlock(&rwlock);
 
 }
 
