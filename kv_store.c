@@ -54,7 +54,7 @@ void kvPut(const char *key, const char*val){
     unsigned int idx = hash((char*)key);
     int checked=0;
     pthread_rwlock_wrlock(&rwlock);
-    
+
     Node *curr= kvStore[idx];
     while(curr != NULL){
         if(strcmp(curr->key,key)==0){
@@ -74,6 +74,40 @@ void kvPut(const char *key, const char*val){
         kvStore[idx]= new_kv;
     }
      pthread_rwlock_unlock(&rwlock);
+
+     // Todo, I need to remember to keep put my persistance storage here
+
+}
+
+int kvDel(const char *key){
+    unsigned int idx = hash((char*)key);
+    char *result = NULL;
+    unsigned int idx= hash(key);
+    Node *curr= kvStore[idx];
+    Node *prev= NULL;
+    int deleted=0;
+
+    printf("User DEL: Key=%s\n", key);
+
+    pthread_rwlock_wrlock(&rwlock);
+    while(curr!=NULL){
+        if(strcmp(curr->key,key)==0){
+            if(prev==NULL){
+                kvStore[idx]= curr->next;
+            }
+            else{
+                prev->next= curr->next;
+            }
+            free(curr->key);
+            free(curr->val);
+            free(curr);
+            deleted=1;
+            break;
+        }
+        prev= curr;
+        curr= curr->next;
+    }
+    pthread_rwlock_unlock(&rwlock);
 
 }
 
