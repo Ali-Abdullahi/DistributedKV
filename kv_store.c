@@ -56,7 +56,21 @@ void kvPut(const char *key, const char*val){
     Node *curr= kvStore[idx];
     int checked=0;
     while(curr != NULL){
-        
+        if(strcmp(curr->key,key)==0){
+            free(curr->val);
+            curr->val=stdup(val);
+            checked=1;
+            break;
+        }
+        curr= curr->next;
+    }
+    
+    if(checked!=1){
+        Node * new_kv= malloc(sizeof(Node));
+        new_kv->key=strdup(key); //Creates permanent copies of the data
+        new_kv->val=strdup(val); //Creates permanent copies of the data
+        new_kv->next= kvStore[idx]; //Points next to whatever is already at idx, so every new collision is at the beginning of the linked list.
+        kvStore[idx]= new_kv;
     }
 
 }
