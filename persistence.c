@@ -10,6 +10,7 @@ void save_to_disk(){     // Saves the current contents of the kv_store into a da
     pthread_rwlock_rdlock(&rwlock);
     if(f==NULL){
         perror("Failed to open Database file.");
+        return;
     }
 
     for(int i=0; i<TABLE_SIZE; i++){
