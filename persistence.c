@@ -20,3 +20,17 @@ void save_to_disk(){     // Saves the current contents of the kv_store into a da
     }
     fclose(f);
 }
+
+
+
+void pull_from_disk(){  //Reloads the kv_store with the saved values from database.txt
+    FILE *f= fopen("database.txt", "r");
+    if(f==NULL){
+        return;
+    }
+
+    char key[30];
+    char val[100];
+
+
+}
