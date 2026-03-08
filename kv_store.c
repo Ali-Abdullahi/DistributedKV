@@ -12,7 +12,7 @@
    
 Node *kvStore[TABLE_SIZE]= {NULL};
 // int writers_waiting = 0; // Don't get reader locks if writers are waiting.
-static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
 
 unsigned int hash(char *key){
