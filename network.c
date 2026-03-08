@@ -17,7 +17,11 @@
 
 #define LISTEN_QUEUE_LEN 5
 
+int keep_going=1;
 
+void handle_sigint(int signo) {
+    keep_going = 0;
+}
 
 
 void *handle_command(void *client_fd_ptr) {
@@ -76,7 +80,9 @@ void *handle_command(void *client_fd_ptr) {
 }
 
 
-void network_server(int argc, char **argv) {
+
+// NETWORK SERVER
+int network_server(const char *port) {
     struct sigaction scheck;
     scheck.sa_handler= handle_sigint;
     scheck.sa_flags=0;
@@ -86,13 +92,6 @@ void network_server(int argc, char **argv) {
         return -1;
 
     }
-  
-    if (argc != 2) {
-        printf("Usage: %s <port>\n", argv[0]);
-        return 1;
-    }
-
-    const char *port = argv[1];
     struct addrinfo hints;
     memset(&hints,0,sizeof(hints));
     hints.ai_family= AF_UNSPEC;
@@ -110,6 +109,10 @@ void network_server(int argc, char **argv) {
         freeaddrinfo(servers);
         return -1;
     }
+
+    int opt = 1;
+    setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    
     if(bind(sock_fd,servers->ai_addr,servers->ai_addrlen)==-1){
         perror("bind");
         freeaddrinfo(servers);
@@ -124,12 +127,11 @@ void network_server(int argc, char **argv) {
 
     }
 
-    pull_from_disk(); // Loads data from disk if exists
-    pthread_rwlock_init(&rwlock, NULL);
 
     printf("KV-Store Server started on port %s\n", port);
     printf("Ready for connections...\n");
-    while(keep_going==1){   // Main Logic for PUT, GET, Everything above is the base for building a TCP server
+
+    while(keep_going==1){
         int client_fd= accept(sock_fd,NULL,NULL);
         if(client_fd==-1){
             if(errno==EINTR){
@@ -146,7 +148,6 @@ void network_server(int argc, char **argv) {
         int *client_fd_ptr = (int *) malloc(sizeof(int));
         *client_fd_ptr = client_fd;
         pthread_create(&tempThread, NULL, handle_command, client_fd_ptr);
-        // Switch implementation to thread pool at some point
         pthread_detach(tempThread);
     }
 
