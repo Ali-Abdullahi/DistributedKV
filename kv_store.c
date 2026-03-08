@@ -6,7 +6,6 @@
 #include <string.h>
 #include "kv_store.h"
 
-#define LISTEN_QUEUE_LEN 5
 
 
    

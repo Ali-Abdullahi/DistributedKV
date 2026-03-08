@@ -15,6 +15,8 @@
 #include "kv_store.h"
 
 
+#define LISTEN_QUEUE_LEN 5
+
 int main(int argc, char **argv) {
     struct sigaction scheck;
     scheck.sa_handler= handle_sigint;
