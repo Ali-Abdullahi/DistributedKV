@@ -1,17 +1,9 @@
 #define _GNU_SOURCE
 
 #include <stdlib.h>
-#include <errno.h>
-#include <netdb.h>
 #include <pthread.h>
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include "kv_store.h"
 
 #define LISTEN_QUEUE_LEN 5
@@ -81,13 +73,9 @@ void kvPut(const char *key, const char*val){
 
 int kvDel(const char *key){
     unsigned int idx = hash((char*)key);
-    char *result = NULL;
-    unsigned int idx= hash(key);
     Node *curr= kvStore[idx];
     Node *prev= NULL;
     int deleted=0;
-
-    printf("User DEL: Key=%s\n", key);
 
     pthread_rwlock_wrlock(&rwlock);
     while(curr!=NULL){
@@ -108,6 +96,8 @@ int kvDel(const char *key){
         curr= curr->next;
     }
     pthread_rwlock_unlock(&rwlock);
+
+    return deleted;
 
 }
 
