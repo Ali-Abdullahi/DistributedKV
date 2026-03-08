@@ -17,7 +17,93 @@
 
 #define LISTEN_QUEUE_LEN 5
 
-int main(int argc, char **argv) {
+
+
+
+void *handle_command(void *client_fd_ptr) {
+    int client_fd = *((int *) client_fd_ptr);
+    free(client_fd_ptr);
+
+    char cmd_input[BUFSIZE];
+    ssize_t bytes_read= read(client_fd, cmd_input, BUFSIZE-1);
+
+    if(bytes_read>0){
+        cmd_input[bytes_read]='\0';
+        char cmd[5];
+        char key[30];
+        char val[100];
+
+        int parse_cmd= sscanf(cmd_input, "%s %s %s", cmd, key, val);
+
+        char *res= "COMPLETE\n";
+
+        if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
+            kvPut(key,val);
+            save_to_disk();
+            write(client_fd, "COMPLETE\n", 9);
+        }
+
+        else if(strcmp(cmd, "GET") == 0 && parse_cmd == 2){
+            char* val_found= kvGet(key);
+            if(val_found != NULL){
+                write(client_fd,val_found,strlen(val_found));
+                write(client_fd,"\n",1);
+            }
+
+        }
+        else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
+            unsigned int idx= hash(key);
+            Node *curr= kvStore[idx];
+            Node *prev= NULL;
+            int deleted=0;
+
+            printf("User DEL: Key=%s\n", key);
+
+            pthread_rwlock_wrlock(&rwlock);
+            while(curr!=NULL){
+                if(strcmp(curr->key,key)==0){
+                    if(prev==NULL){
+                        kvStore[idx]= curr->next;
+                    }
+                    else{
+                        prev->next= curr->next;
+                    }
+                    free(curr->key);
+                    free(curr->val);
+                    free(curr);
+                    deleted=1;
+                    break;
+                }
+                prev= curr;
+                curr= curr->next;
+            }
+            pthread_rwlock_unlock(&rwlock);
+
+            if(deleted==1){
+                save_to_disk(); // Saves to disk for persistence
+                log_op("DEL", key, "OK", NULL); //Display timestamp for DEL
+                write(client_fd, res, strlen(res));
+            }
+            else{
+                log_op("DEL", key, "NOT_FOUND", NULL); //Display timestamp for DEL
+                char *err_msg= "KEY NOT FOUND!\n";
+                write(client_fd, err_msg, strlen(err_msg));
+            }
+        }
+
+        else{
+            char *err_msg= "INVALID COMMAND!\n";
+            write(client_fd, err_msg, strlen(err_msg));
+        }
+
+    }
+
+    close(client_fd);
+    return NULL;
+}
+
+
+void network_server(int argc, char **argv) {
     struct sigaction scheck;
     scheck.sa_handler= handle_sigint;
     scheck.sa_flags=0;
