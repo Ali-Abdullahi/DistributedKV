@@ -33,4 +33,15 @@ void pull_from_disk(){  //Reloads the kv_store with the saved values from databa
     char val[100];
 
 
+    while (fscanf(f, "%s %s",key, val) == 2){
+        unsigned int idx= hash(key);
+        Node *single_node= malloc(sizeof(Node));
+        single_node->key= strdup(key);
+        single_node->val= strdup(val);
+        single_node->next= kvStore[idx];
+        kvStore[idx]=single_node;
+    }
+    
+    fclose(f);
+
 }
