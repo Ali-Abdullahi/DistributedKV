@@ -13,6 +13,7 @@ typedef struct Node{
 
 extern Node *kvStore[TABLE_SIZE];
 extern pthread_rwlock_t rwlock;
+extern int keep_going;
 
 unsigned int hash(char *key);
 char * kvGet(const char * key);

@@ -17,11 +17,6 @@
 
 #define LISTEN_QUEUE_LEN 5
 
-int keep_going=1;
-
-void handle_sigint(int signo) {
-    keep_going = 0;
-}
 
 
 void *handle_command(void *client_fd_ptr) {
@@ -83,15 +78,6 @@ void *handle_command(void *client_fd_ptr) {
 
 // NETWORK SERVER
 int network_server(const char *port) {
-    struct sigaction scheck;
-    scheck.sa_handler= handle_sigint;
-    scheck.sa_flags=0;
-    sigemptyset(&scheck.sa_mask);
-    if(sigaction(SIGINT,&scheck,NULL)==-1){
-        perror("sigaction");
-        return -1;
-
-    }
     struct addrinfo hints;
     memset(&hints,0,sizeof(hints));
     hints.ai_family= AF_UNSPEC;
@@ -112,7 +98,7 @@ int network_server(const char *port) {
 
     int opt = 1;
     setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    
+
     if(bind(sock_fd,servers->ai_addr,servers->ai_addrlen)==-1){
         perror("bind");
         freeaddrinfo(servers);
