@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <stdio.h>
+#include "kv_store.h"
 
 int keep_going=1;
 
@@ -23,5 +24,13 @@ int main(int argc, char **argv) {
         printf("Usage: %s <port>\n", argv[0]);
         return 1;
     }
+
+    pthread_rwlock_init(&rwlock, NULL);
+    pull_from_disk();
+
+    network_server(argv[1]);
+    pthread_rwlock_destroy(&rwlock);
+
+    return 0;
 
 }
