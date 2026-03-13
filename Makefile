@@ -1,6 +1,7 @@
 CFLAGS= -Wall -pthread -g -Wextra
 
 all: final
+	rm -f *.o
 
 final : main.o persistence.o network.o kv_store.o
 	gcc $(CFLAGS) main.o persistence.o network.o kv_store.o -o final
