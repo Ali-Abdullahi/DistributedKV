@@ -27,50 +27,52 @@ void *handle_command(void *client_fd_ptr) {
     write(client_fd, welcome, strlen(welcome));
 
     char cmd_input[BUFSIZE];
-    ssize_t bytes_read= read(client_fd, cmd_input, BUFSIZE-1);
+    while(1){
+        ssize_t bytes_read= read(client_fd, cmd_input, BUFSIZE-1);
 
-    if(bytes_read>0){
-        cmd_input[bytes_read]='\0';
-        char cmd[5];
-        char key[30];
-        char val[100];
+        if(bytes_read>0){
+            cmd_input[bytes_read]='\0';
+            char cmd[5];
+            char key[30];
+            char val[100];
 
-        int parse_cmd= sscanf(cmd_input, "%s %s %s", cmd, key, val);
+            int parse_cmd= sscanf(cmd_input, "%s %s %s", cmd, key, val);
 
-        char *res= "COMPLETE\n";
+            char *res= "COMPLETE\n";
 
-        if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
-            kvPut(key,val);
-            save_to_disk();
-            write(client_fd, "COMPLETE\n", 9);
-        }
-
-        else if(strcmp(cmd, "GET") == 0 && parse_cmd == 2){
-            char* val_found= kvGet(key);
-            if(val_found != NULL){
-                write(client_fd,val_found,strlen(val_found));
-                write(client_fd,"\n",1);
-                free(val_found);
+            if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
+                kvPut(key,val);
+                save_to_disk();
+                write(client_fd, "COMPLETE\n", 9);
             }
+
+            else if(strcmp(cmd, "GET") == 0 && parse_cmd == 2){
+                char* val_found= kvGet(key);
+                if(val_found != NULL){
+                    write(client_fd,val_found,strlen(val_found));
+                    write(client_fd,"\n",1);
+                    free(val_found);
+                }
+                else{
+                    write(client_fd, "NOT_FOUND\n", 10);
+                }
+
+            }
+            else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
+                if(kvDel(key)==1){
+                save_to_disk();
+                write(client_fd, "COMPLETE\n", 9);              
+                }
+                else{
+                    write(client_fd,"KEY NOT FOUND\n",16);
+                }
+
+            }
+
             else{
-                write(client_fd, "NOT_FOUND\n", 10);
+                char *err_msg= "INVALID COMMAND!\n";
+                write(client_fd, err_msg, strlen(err_msg));
             }
-
-        }
-        else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
-            if(kvDel(key)==1){
-              save_to_disk();
-              write(client_fd, "COMPLETE\n", 9);              
-            }
-            else{
-                write(client_fd,"KEY NOT FOUND\n",16);
-            }
-
-        }
-
-        else{
-            char *err_msg= "INVALID COMMAND!\n";
-            write(client_fd, err_msg, strlen(err_msg));
         }
     }
     close(client_fd);
