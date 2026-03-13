@@ -23,5 +23,8 @@ int kvDel(const char *key);
 void save_to_disk();
 void pull_from_disk();
 
+int network_server(const char *port);
+void *handle_command(void *client_fd_ptr);
+
 
 #endif

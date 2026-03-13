@@ -17,3 +17,6 @@ persistence.o : persistence.c
 main.o : main.c 
 	gcc $(CFLAGS) -c main.c
 
+clean:
+	rm main.o persistence.o kv_store.o network.o final
+
