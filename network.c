@@ -23,6 +23,9 @@ void *handle_command(void *client_fd_ptr) {
     int client_fd = *((int *) client_fd_ptr);
     free(client_fd_ptr);
 
+    char *welcome = "CONNECTED to Distributed-KV v1.0\n> ";
+    write(client_fd, welcome, strlen(welcome));
+
     char cmd_input[BUFSIZE];
     ssize_t bytes_read= read(client_fd, cmd_input, BUFSIZE-1);
 
