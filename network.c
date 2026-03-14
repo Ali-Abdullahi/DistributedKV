@@ -27,6 +27,7 @@ void *handle_command(void *client_fd_ptr) {
     write(client_fd, welcome, strlen(welcome));
 
     char cmd_input[BUFSIZE];
+    memset(cmd_input, 0, BUFSIZE);
     while(1){
         ssize_t bytes_read= read(client_fd, cmd_input, BUFSIZE-1);
 
