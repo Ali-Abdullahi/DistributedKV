@@ -27,4 +27,25 @@ void replicate_data(const char *cmd, const char *key, const char *val){
         freeaddrinfo(res);
         return;
     }
+
+    if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
+            close(sock);
+            freeaddrinfo(res);
+            return; 
+    }
+
+    char buffer[BUFSIZE];
+    snprintf(buffer, sizeof(buffer), "%s %s %s\n", cmd, key, val);
+
+    ssize_t sent = send(sock, buffer, strlen(buffer), 0);
+
+    if (sent < (ssize_t)strlen(buffer)) {
+        if (sent < 0) {
+            perror("Send error");
+        } else {
+            fprintf(stderr, "Partial send occurred: only sent %zd bytes\n", sent);
+        }
+    }
+    close(sock);
+    freeaddrinfo(res);
 }
