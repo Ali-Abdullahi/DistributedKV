@@ -13,6 +13,7 @@ typedef struct Node{
 
 extern Node *kvStore[TABLE_SIZE];
 extern pthread_rwlock_t rwlock;
+extern char *follower_port;
 extern int keep_going;
 
 unsigned int hash(char *key);
@@ -22,6 +23,7 @@ int kvDel(const char *key);
 
 void save_to_disk();
 void pull_from_disk();
+void replicate_data(const char *cmd, const char *key, const char *val);
 
 int network_server(const char *port);
 void *handle_command(void *client_fd_ptr);
