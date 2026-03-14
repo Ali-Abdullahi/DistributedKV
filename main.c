@@ -29,6 +29,10 @@ int main(int argc, char **argv) {
     pull_from_disk();
 
     network_server(argv[1]);
+
+    printf("Finalizing persistence before exit...\n");
+    save_to_disk();
+    
     pthread_rwlock_destroy(&rwlock);
 
     return 0;
