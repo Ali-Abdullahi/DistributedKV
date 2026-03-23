@@ -5,6 +5,7 @@
 int keep_going=1;
 
 void handle_sigint(int signo) {
+    (void)signo;
     printf("\nShutting down gracefully...\n");
     keep_going = 0;
 }
@@ -25,7 +26,14 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    char *my_port = argv[1];
+    if (argc == 3) {
+        follower_port = argv[2]; 
+        printf("Role: LEADER (Replicating to %s)\n", follower_port);
+    } 
+    else {
+        follower_port = NULL;   
+        printf("Role: STANDALONE/FOLLOWER\n");
+    }
 
     
 
