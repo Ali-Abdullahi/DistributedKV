@@ -20,10 +20,14 @@ int main(int argc, char **argv) {
 
     }
   
-    if (argc != 2) {
-        printf("Usage: %s <port>\n", argv[0]);
+    if (argc < 2 || argc > 3) {
+        printf("Usage: %s <my_port> [follower_port]\n", argv[0]);
         return 1;
     }
+
+    char *my_port = argv[1];
+
+    
 
     pthread_rwlock_init(&rwlock, NULL);
     pull_from_disk();
@@ -32,7 +36,7 @@ int main(int argc, char **argv) {
 
     printf("Finalizing persistence before exit...\n");
     save_to_disk();
-    
+
     pthread_rwlock_destroy(&rwlock);
 
     return 0;
