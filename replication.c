@@ -7,9 +7,10 @@
 #include "kv_store.h"
 
 char *follower_port = NULL;
+char *follower_ip= NULL;
 
 void replicate_data(const char *cmd, const char *key, const char *val){
-    if(follower_port==NULL){
+    if(follower_port==NULL || follower_ip){
         return;
     }
 
@@ -18,7 +19,7 @@ void replicate_data(const char *cmd, const char *key, const char *val){
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo("localhost", follower_port, &hints, &res) != 0){
+    if (getaddrinfo(follower_ip, follower_port, &hints, &res) != 0){
         return;
     }
 
