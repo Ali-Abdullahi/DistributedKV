@@ -14,6 +14,7 @@ typedef struct Node{
 extern Node *kvStore[TABLE_SIZE];
 extern pthread_rwlock_t rwlock;
 extern char *follower_port;
+extern char *follower_ip;
 extern int keep_going;
 
 unsigned int hash(char *key);
