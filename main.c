@@ -26,6 +26,10 @@ int main(int argc, char **argv) {
 
     }
   
+
+    pthread_rwlock_init(&rwlock, NULL);
+    pull_from_disk();
+
     if (argc < 2 || argc == 3 || argc>4) {
        printf("Usage: %s <my_port> [follower_ip follower_port]\n", argv[0]);
         return 1;
@@ -43,10 +47,7 @@ int main(int argc, char **argv) {
         printf("Role: STANDALONE/FOLLOWER\n");
     }
 
-    
 
-    pthread_rwlock_init(&rwlock, NULL);
-    pull_from_disk();
 
     network_server(argv[1]);
 
