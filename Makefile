@@ -3,7 +3,7 @@ CFLAGS= -Wall -pthread -g -Wextra
 all: final
 	rm -f *.o
 
-final : main.o persistence.o network.o kv_store.o
+final : main.o persistence.o network.o kv_store.o replication.o
 	gcc $(CFLAGS) main.o persistence.o network.o kv_store.o replication.o -o final
 
 replication.0 : replication.c
