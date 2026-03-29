@@ -30,6 +30,7 @@ void replicate_data(const char *cmd, const char *key, const char *val){
     }
 
     if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
+            perror("Replication connect failed");
             close(sock);
             freeaddrinfo(res);
             return; 

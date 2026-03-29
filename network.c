@@ -33,6 +33,7 @@ void *handle_command(void *client_fd_ptr) {
 
         if(bytes_read>0){
             cmd_input[bytes_read]='\0';
+            printf("Follower received: %s\n", cmd_input);
             char cmd[5];
             char key[30];
             char val[100];
