@@ -45,6 +45,7 @@ void *handle_command(void *client_fd_ptr) {
             if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
                 kvPut(key,val);
                 save_to_disk();
+                replicate_data("PUT", key, val);
                 write(client_fd, "COMPLETE\n", 9);
             }
 
@@ -63,6 +64,7 @@ void *handle_command(void *client_fd_ptr) {
             else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
                 if(kvDel(key)==1){
                 save_to_disk();
+                replicate_data("DEL", key, "");
                 write(client_fd, "COMPLETE\n", 9);              
                 }
                 else{
