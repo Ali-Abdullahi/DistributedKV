@@ -19,5 +19,5 @@ main.o : main.c
 	gcc $(CFLAGS) -c main.c
 
 clean:
-	rm final
+	rm -f final *.o
 
