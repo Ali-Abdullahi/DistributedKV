@@ -27,14 +27,14 @@ int main(int argc, char **argv) {
     }
   
     if (argc < 2 || argc == 3 || argc>4) {
-        printf("Usage: %s <my_port> [follower_port]\n", argv[0]);
+       printf("Usage: %s <my_port> [follower_ip follower_port]\n", argv[0]);
         return 1;
     }
 
     if (argc == 4) {
         follower_ip=argv[2];
         follower_port = argv[3]; 
-        printf("Role: LEADER (Replicating to %s:%s)\n", follower_port,follower_ip);
+       printf("Role: LEADER (Replicating to %s:%s)\n", follower_port,follower_ip);
     } 
     else {
         follower_port = NULL;   
