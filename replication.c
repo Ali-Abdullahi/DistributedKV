@@ -6,8 +6,7 @@
 #include <unistd.h>
 #include "kv_store.h"
 
-char *follower_port = NULL;
-char *follower_ip= NULL;
+
 
 void replicate_data(const char *cmd, const char *key, const char *val){
     if(follower_port==NULL || follower_ip){

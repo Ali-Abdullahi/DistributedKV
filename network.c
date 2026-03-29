@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "kv_store.h"
+#include "replication.c"
 
 
 #define LISTEN_QUEUE_LEN 5
