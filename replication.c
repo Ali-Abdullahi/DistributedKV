@@ -10,7 +10,7 @@
 
 void replicate_data(const char *cmd, const char *key, const char *val){
     printf("--> Replication triggered! IP: %s, Port: %s\n", follower_ip, follower_port);
-    if(follower_port==NULL || follower_ip){
+    if(follower_port==NULL || follower_ip==NULL){
         printf("--> ABORT: IP or Port is NULL!\n");
         return;
     }

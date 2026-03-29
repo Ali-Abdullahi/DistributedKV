@@ -22,7 +22,7 @@ void save_to_disk(){     // Saves the current contents of the kv_store into a da
     }
     fclose(f);
     pthread_rwlock_unlock(&rwlock);
-    printf("Data successfully stores in disk.");
+    printf("Data successfully stored in Leaders disk.");
 }
 
 

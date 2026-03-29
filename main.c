@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
         follower_ip=argv[2];
         follower_port = argv[3]; 
        printf("Role: LEADER (Replicating to %s:%s)\n", follower_port,follower_ip);
+       sync_all_to_follower();
     } 
     else {
         follower_port = NULL;   

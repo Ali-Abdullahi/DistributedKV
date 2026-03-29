@@ -101,3 +101,18 @@ int kvDel(const char *key){
 }
 
 
+void sync_all_to_follower() {
+    printf("--> Initiating Full State Transfer to Follower...\n");
+    pthread_rwlock_rdlock(&rwlock);
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        Node *curr = kvStore[i];
+        while (curr != NULL) {
+            replicate_data("PUT", curr->key, curr->val);
+            curr = curr->next;
+        }
+    }
+    pthread_rwlock_unlock(&rwlock);
+    printf("--> State Transfer Complete.\n");
+}
+
+
