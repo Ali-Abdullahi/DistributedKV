@@ -9,7 +9,9 @@
 
 
 void replicate_data(const char *cmd, const char *key, const char *val){
+    printf("--> Replication triggered! IP: %s, Port: %s\n", follower_ip, follower_port);
     if(follower_port==NULL || follower_ip){
+        printf("--> ABORT: IP or Port is NULL!\n");
         return;
     }
 
@@ -24,12 +26,13 @@ void replicate_data(const char *cmd, const char *key, const char *val){
 
     int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (sock == -1) {
+        perror("--> ABORT: socket failed");
         freeaddrinfo(res);
         return;
     }
 
     if (connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
-            perror("Replication connect failed");
+            perror("--> ABORT: Replication connect failed");
             close(sock);
             freeaddrinfo(res);
             return; 
@@ -47,6 +50,7 @@ void replicate_data(const char *cmd, const char *key, const char *val){
             fprintf(stderr, "Partial send occurred: only sent %zd bytes\n", sent);
         }
     }
+    printf("--> Replication Sent Successfully!\n");
     close(sock);
     freeaddrinfo(res);
 }
