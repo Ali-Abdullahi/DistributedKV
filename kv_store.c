@@ -10,7 +10,6 @@
 
    
 Node *kvStore[TABLE_SIZE]= {NULL};
-// int writers_waiting = 0; // Don't get reader locks if writers are waiting.
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
 
@@ -66,7 +65,6 @@ void kvPut(const char *key, const char*val){
     }
      pthread_rwlock_unlock(&rwlock);
 
-     // Todo, I need to remember to keep put my persistance storage here
 
 }
 
@@ -103,15 +101,35 @@ int kvDel(const char *key){
 
 void sync_all_to_follower() {
     printf("--> Initiating Full State Transfer to Follower...\n");
+    char **keys = NULL;
+    char **vals = NULL;
+    size_t n = 0, cap = 0;
+
     pthread_rwlock_rdlock(&rwlock);
     for (int i = 0; i < TABLE_SIZE; i++) {
         Node *curr = kvStore[i];
         while (curr != NULL) {
-            replicate_data("PUT", curr->key, curr->val);
+            if (n == cap) {
+                cap = cap ? cap * 2 : 16;
+                keys = realloc(keys, cap * sizeof(char *));
+                vals = realloc(vals, cap * sizeof(char *));
+            }
+            keys[n] = strdup(curr->key);
+            vals[n] = strdup(curr->val);
+            n++;
             curr = curr->next;
         }
     }
     pthread_rwlock_unlock(&rwlock);
+
+    for (size_t i = 0; i < n; i++) {
+        replicate_data("PUT", keys[i], vals[i]);
+        free(keys[i]);
+        free(vals[i]);
+    }
+    free(keys);
+    free(vals);
+
     printf("--> State Transfer Complete.\n");
 }
 

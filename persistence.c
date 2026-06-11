@@ -6,13 +6,12 @@
 
 void save_to_disk(){     // Saves the current contents of the kv_store into a database.txt file
     FILE *f= fopen("database.txt", "w");
-
-    pthread_rwlock_rdlock(&rwlock);
     if(f==NULL){
         perror("Failed to open Database file.");
         return;
     }
 
+    pthread_rwlock_rdlock(&rwlock);
     for(int i=0; i<TABLE_SIZE; i++){
         Node *curr= kvStore[i];
         while(curr!=NULL){
@@ -20,9 +19,9 @@ void save_to_disk(){     // Saves the current contents of the kv_store into a da
             curr=curr->next;
         }
     }
-    fclose(f);
     pthread_rwlock_unlock(&rwlock);
-    printf("Data successfully stored in Leaders disk.");
+    fclose(f);
+    printf("Data successfully stored in Leaders disk.\n");
 }
 
 

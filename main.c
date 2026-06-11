@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     if (argc == 4) {
         follower_ip=argv[2];
         follower_port = argv[3]; 
-       printf("Role: LEADER (Replicating to %s:%s)\n", follower_port,follower_ip);
+       printf("Role: LEADER (Replicating to %s:%s)\n", follower_ip,follower_port);
        sync_all_to_follower();
     } 
     else {

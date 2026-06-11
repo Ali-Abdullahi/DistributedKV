@@ -27,58 +27,61 @@ void *handle_command(void *client_fd_ptr) {
     write(client_fd, welcome, strlen(welcome));
 
     char cmd_input[BUFSIZE];
-    memset(cmd_input, 0, BUFSIZE);
     while(1){
+        memset(cmd_input, 0, BUFSIZE);
         ssize_t bytes_read= read(client_fd, cmd_input, BUFSIZE-1);
 
-        if(bytes_read>0){
-            cmd_input[bytes_read]='\0';
-            printf("Server received: %s\n", cmd_input);
-            char cmd[5];
-            char key[30];
-            char val[100];
+        if(bytes_read <= 0){
+            break;
+        }
 
-            int parse_cmd= sscanf(cmd_input, "%s %s %s", cmd, key, val);
+        cmd_input[bytes_read]='\0';
+        printf("Server received: %s\n", cmd_input);
 
-            char *res= "COMPLETE\n";
+        char cmd[5] = {0};
+        char key[30] = {0};
+        char val[100] = {0};
 
-            if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
-                kvPut(key,val);
-                save_to_disk();
-                replicate_data("PUT", key, val);
-                write(client_fd, "COMPLETE\n", 9);
+        int parse_cmd= sscanf(cmd_input, "%4s %29s %99s", cmd, key, val);
+
+        if(parse_cmd < 1){
+            write(client_fd, "INVALID COMMAND!\n", 17);
+            continue;
+        }
+
+        if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
+            kvPut(key,val);
+            save_to_disk();
+            replicate_data("PUT", key, val);
+            write(client_fd, "COMPLETE\n", 9);
+        }
+        else if(strcmp(cmd, "GET") == 0 && parse_cmd == 2){
+            char* val_found= kvGet(key);
+            if(val_found != NULL){
+                write(client_fd,val_found,strlen(val_found));
+                write(client_fd,"\n",1);
+                free(val_found);
             }
-
-            else if(strcmp(cmd, "GET") == 0 && parse_cmd == 2){
-                char* val_found= kvGet(key);
-                if(val_found != NULL){
-                    write(client_fd,val_found,strlen(val_found));
-                    write(client_fd,"\n",1);
-                    free(val_found);
-                }
-                else{
-                    write(client_fd, "NOT_FOUND\n", 10);
-                }
-
-            }
-            else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
-                if(kvDel(key)==1){
-                save_to_disk();
-                replicate_data("DEL", key, "");
-                write(client_fd, "COMPLETE\n", 9);              
-                }
-                else{
-                    write(client_fd,"KEY NOT FOUND\n",16);
-                }
-
-            }
-
             else{
-                char *err_msg= "INVALID COMMAND!\n";
-                write(client_fd, err_msg, strlen(err_msg));
+                write(client_fd, "NOT_FOUND\n", 10);
             }
         }
+        else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
+            if(kvDel(key)==1){
+                save_to_disk();
+                replicate_data("DEL", key, "");
+                write(client_fd, "COMPLETE\n", 9);
+            }
+            else{
+                write(client_fd,"KEY NOT FOUND\n",14);
+            }
+        }
+        else{
+            write(client_fd, "INVALID COMMAND!\n", 17);
+        }
     }
+
+    printf("Client disconnected (fd=%d)\n", client_fd);
     close(client_fd);
     return NULL;
 }
@@ -139,7 +142,6 @@ int network_server(const char *port) {
         }
 
         pthread_t tempThread;
-        // Safer than passing directly
         int *client_fd_ptr = (int *) malloc(sizeof(int));
         *client_fd_ptr = client_fd;
         pthread_create(&tempThread, NULL, handle_command, client_fd_ptr);

@@ -8,7 +8,7 @@
 typedef struct Node{
     char *key;
     char *val;
-    struct Node *next; //For collisions to hold more than one node at a specific array position
+    struct Node *next; 
 } Node;   
 
 extern Node *kvStore[TABLE_SIZE];
