@@ -3,11 +3,14 @@ CFLAGS= -Wall -pthread -g -Wextra
 all: final
 	rm -f *.o
 
-final : main.o persistence.o network.o kv_store.o replication.o
-	gcc $(CFLAGS) main.o persistence.o network.o kv_store.o replication.o -o final
+final : main.o persistence.o network.o kv_store.o replication.o followers.o
+	gcc $(CFLAGS) main.o persistence.o network.o kv_store.o replication.o followers.o -o final
 
-replication.0 : replication.c
+replication.o : replication.c
 	gcc $(CFLAGS) -c replication.c
+
+followers.o : followers.c
+	gcc $(CFLAGS) -c followers.c
 
 kv_store.o : kv_store.c
 	gcc $(CFLAGS) -c kv_store.c

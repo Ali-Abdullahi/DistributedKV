@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "kv_store.h"
+#include "followers.h"
 
 
 #define LISTEN_QUEUE_LEN 5
@@ -23,8 +24,11 @@ void *handle_command(void *client_fd_ptr) {
     int client_fd = *((int *) client_fd_ptr);
     free(client_fd_ptr);
 
-    char *welcome = "CONNECTED to Distributed-KV v1.0\n> ";
-    write(client_fd, welcome, strlen(welcome));
+    // Welcome string was removed: followers also connect on this port and
+    // would mistake "CONNECTED ..." for a command. Human clients use the
+    // client library instead.
+
+    int transferred = 0;   // set when fd is handed off to the follower list
 
     char cmd_input[BUFSIZE];
     while(1){
@@ -38,18 +42,28 @@ void *handle_command(void *client_fd_ptr) {
         cmd_input[bytes_read]='\0';
         printf("Server received: %s\n", cmd_input);
 
-        char cmd[5] = {0};
+        char cmd[16] = {0};
         char key[30] = {0};
         char val[100] = {0};
 
-        int parse_cmd= sscanf(cmd_input, "%4s %29s %99s", cmd, key, val);
+        int parse_cmd= sscanf(cmd_input, "%15s %29s %99s", cmd, key, val);
 
         if(parse_cmd < 1){
             write(client_fd, "INVALID COMMAND!\n", 17);
             continue;
         }
 
-        if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
+        if (strcmp(cmd, "REGISTER") == 0 && node_mode == MODE_LEADER) {
+            printf("Leader: follower registering on fd=%d, sending full state sync...\n",
+                   client_fd);
+            sync_state_to_fd(client_fd);
+            followers_add(client_fd);
+            printf("Leader: follower fd=%d added (%zu follower(s) now)\n",
+                   client_fd, followers_count());
+            transferred = 1;
+            break;
+        }
+        else if (strcmp(cmd, "PUT")== 0 && parse_cmd== 3){
             kvPut(key,val);
             save_to_disk();
             replicate_data("PUT", key, val);
@@ -81,8 +95,10 @@ void *handle_command(void *client_fd_ptr) {
         }
     }
 
-    printf("Client disconnected (fd=%d)\n", client_fd);
-    close(client_fd);
+    if (!transferred) {
+        printf("Client disconnected (fd=%d)\n", client_fd);
+        close(client_fd);
+    }
     return NULL;
 }
 

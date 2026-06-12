@@ -4,13 +4,14 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
 #include "kv_store.h"
 
 
-
-   
 Node *kvStore[TABLE_SIZE]= {NULL};
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+node_mode_t node_mode = MODE_LEADER;
 
 
 unsigned int hash(char *key){
@@ -99,8 +100,9 @@ int kvDel(const char *key){
 }
 
 
-void sync_all_to_follower() {
-    printf("--> Initiating Full State Transfer to Follower...\n");
+// Writes the full table down `fd` as a stream of "PUT k v\n" lines.
+// Used by the leader when a follower first registers.
+void sync_state_to_fd(int fd) {
     char **keys = NULL;
     char **vals = NULL;
     size_t n = 0, cap = 0;
@@ -122,15 +124,22 @@ void sync_all_to_follower() {
     }
     pthread_rwlock_unlock(&rwlock);
 
+    char buf[BUFSIZE];
     for (size_t i = 0; i < n; i++) {
-        replicate_data("PUT", keys[i], vals[i]);
+        int len = snprintf(buf, sizeof(buf), "PUT %s %s\n", keys[i], vals[i]);
+        if (len > 0) {
+            ssize_t off = 0;
+            while (off < len) {
+                ssize_t w = send(fd, buf + off, len - off, 0);
+                if (w <= 0) break;
+                off += w;
+            }
+        }
         free(keys[i]);
         free(vals[i]);
     }
     free(keys);
     free(vals);
-
-    printf("--> State Transfer Complete.\n");
 }
 
 
