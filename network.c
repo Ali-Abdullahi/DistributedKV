@@ -19,14 +19,30 @@
 #define LISTEN_QUEUE_LEN 5
 
 
+// Tells the client (and prints to the leader's terminal) the current
+// number of followers. Sent after every PUT/GET/DEL response.
+// Followers ignore this line because cmd "FOLLOWERS" isn't PUT or DEL.
+static void report_followers(int client_fd, const char *op) {
+    size_t n = followers_count();
+    char line[64];
+    int len = snprintf(line, sizeof(line), "FOLLOWERS %zu\n", n);
+    if (len > 0) write(client_fd, line, len);
+    printf("Leader: served %s | followers=%zu\n", op, n);
+}
+
 
 void *handle_command(void *client_fd_ptr) {
     int client_fd = *((int *) client_fd_ptr);
     free(client_fd_ptr);
 
-    // Welcome string was removed: followers also connect on this port and
-    // would mistake "CONNECTED ..." for a command. Human clients use the
-    // client library instead.
+    // One-line welcome — must end in '\n' with no trailing prompt so a
+    // follower reading this line just sees a no-op command ("WELCOME") and
+    // moves on to the real sync data.
+    char welcome[128];
+    int wlen = snprintf(welcome, sizeof(welcome),
+                        "WELCOME to Distributed-KV v1.0 (followers connected: %zu)\n",
+                        followers_count());
+    if (wlen > 0) write(client_fd, welcome, wlen);
 
     int transferred = 0;   // set when fd is handed off to the follower list
 
@@ -68,6 +84,7 @@ void *handle_command(void *client_fd_ptr) {
             save_to_disk();
             replicate_data("PUT", key, val);
             write(client_fd, "COMPLETE\n", 9);
+            report_followers(client_fd, "PUT");
         }
         else if(strcmp(cmd, "GET") == 0 && parse_cmd == 2){
             char* val_found= kvGet(key);
@@ -79,6 +96,7 @@ void *handle_command(void *client_fd_ptr) {
             else{
                 write(client_fd, "NOT_FOUND\n", 10);
             }
+            report_followers(client_fd, "GET");
         }
         else if(strcmp(cmd, "DEL") == 0 && parse_cmd == 2){
             if(kvDel(key)==1){
@@ -89,6 +107,7 @@ void *handle_command(void *client_fd_ptr) {
             else{
                 write(client_fd,"KEY NOT FOUND\n",14);
             }
+            report_followers(client_fd, "DEL");
         }
         else{
             write(client_fd, "INVALID COMMAND!\n", 17);
