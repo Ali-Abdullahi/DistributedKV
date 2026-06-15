@@ -12,9 +12,8 @@ typedef struct Node {
 } Node;
 
 typedef enum {
-    MODE_LEADER,    // Accepts clients + follower registrations; replicates writes.
-                    // With zero followers this is the standalone case.
-    MODE_FOLLOWER   // Connects out to a leader and applies its replicated writes.
+    MODE_LEADER,
+    MODE_FOLLOWER
 } node_mode_t;
 
 extern Node *kvStore[TABLE_SIZE];

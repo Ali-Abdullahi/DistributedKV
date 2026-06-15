@@ -14,8 +14,6 @@
 #define RECONNECT_DELAY_SEC 2
 
 
-// Leader: broadcast a single command to every registered follower.
-// Drops followers whose socket has died; they will reconnect on their own.
 void replicate_data(const char *cmd, const char *key, const char *val) {
     if (node_mode != MODE_LEADER) return;
 
@@ -56,7 +54,6 @@ void replicate_data(const char *cmd, const char *key, const char *val) {
 }
 
 
-// Follower-side: apply a single command line received from the leader.
 static void apply_replicated(const char *line) {
     char cmd[16] = {0};
     char key[30] = {0};
@@ -70,12 +67,9 @@ static void apply_replicated(const char *line) {
         kvDel(key);
         save_to_disk();
     }
-    // Anything else (including blank/garbage) is ignored.
 }
 
 
-// Follower main loop: connect to leader, register, stream commands,
-// reconnect with backoff if the link drops. Runs until keep_going clears.
 int follower_loop(const char *host, const char *port) {
     while (keep_going) {
         struct addrinfo hints, *res = NULL;
@@ -118,7 +112,6 @@ int follower_loop(const char *host, const char *port) {
             continue;
         }
 
-        // Read loop with line buffering — leader streams "PUT k v\n" / "DEL k\n".
         char buf[BUFSIZE];
         size_t used = 0;
 

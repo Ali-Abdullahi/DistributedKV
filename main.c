@@ -28,8 +28,6 @@ int main(int argc, char **argv) {
         perror("sigaction");
         return 1;
     }
-    // Don't die from SIGPIPE if a follower vanishes mid-send; we want EPIPE
-    // from send() so replicate_data can prune the dead follower.
     signal(SIGPIPE, SIG_IGN);
 
     pthread_rwlock_init(&rwlock, NULL);
@@ -43,8 +41,6 @@ int main(int argc, char **argv) {
     }
     else if (argc == 4 && strcmp(argv[1], "--follower") == 0) {
         node_mode = MODE_FOLLOWER;
-        // Don't pull_from_disk in follower mode: leader's full state sync
-        // is the source of truth on (re)connect.
         printf("Role: FOLLOWER (leader at %s:%s)\n", argv[2], argv[3]);
         follower_loop(argv[2], argv[3]);
     }

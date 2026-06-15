@@ -100,8 +100,6 @@ int kvDel(const char *key){
 }
 
 
-// Writes the full table down `fd` as a stream of "PUT k v\n" lines.
-// Used by the leader when a follower first registers.
 void sync_state_to_fd(int fd) {
     char **keys = NULL;
     char **vals = NULL;
