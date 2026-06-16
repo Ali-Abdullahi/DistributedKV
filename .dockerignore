@@ -1,0 +1,9 @@
+.git
+.gitignore
+.DS_Store
+README.md
+database.txt
+kvSafeCpy.c
+final
+kv
+*.o

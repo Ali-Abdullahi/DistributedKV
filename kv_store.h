@@ -12,6 +12,7 @@ typedef struct Node {
 } Node;
 
 typedef enum {
+    MODE_UNSET,
     MODE_LEADER,
     MODE_FOLLOWER
 } node_mode_t;
@@ -20,6 +21,7 @@ extern Node *kvStore[TABLE_SIZE];
 extern pthread_rwlock_t rwlock;
 extern node_mode_t node_mode;
 extern int keep_going;
+extern const char *auth_token;
 
 unsigned int hash(char *key);
 char *kvGet(const char *key);
@@ -35,5 +37,7 @@ int follower_loop(const char *leader_host, const char *leader_port);
 
 int network_server(const char *port);
 void *handle_command(void *client_fd_ptr);
+
+int run_client(const char *host, const char *port);
 
 #endif

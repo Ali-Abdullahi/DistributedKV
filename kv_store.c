@@ -11,7 +11,8 @@
 
 Node *kvStore[TABLE_SIZE]= {NULL};
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
-node_mode_t node_mode = MODE_LEADER;
+node_mode_t node_mode = MODE_UNSET;
+const char *auth_token = NULL;
 
 
 unsigned int hash(char *key){

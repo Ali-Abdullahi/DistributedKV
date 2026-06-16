@@ -39,7 +39,8 @@ void *handle_command(void *client_fd_ptr) {
                         followers_count());
     if (wlen > 0) write(client_fd, welcome, wlen);
 
-    int transferred = 0; 
+    int transferred = 0;
+    int authenticated = (auth_token == NULL);
 
     char cmd_input[BUFSIZE];
     while(1){
@@ -61,6 +62,27 @@ void *handle_command(void *client_fd_ptr) {
 
         if(parse_cmd < 1){
             write(client_fd, "INVALID COMMAND!\n", 17);
+            continue;
+        }
+
+        if (strcmp(cmd, "AUTH") == 0) {
+            if (auth_token == NULL) {
+                write(client_fd, "OK\n", 3);
+                authenticated = 1;
+            } else if (parse_cmd >= 2 && strcmp(key, auth_token) == 0) {
+                write(client_fd, "OK\n", 3);
+                authenticated = 1;
+                printf("Leader: fd=%d authenticated\n", client_fd);
+            } else {
+                write(client_fd, "AUTH_FAILED\n", 12);
+                printf("Leader: fd=%d failed auth, closing\n", client_fd);
+                break;
+            }
+            continue;
+        }
+
+        if (!authenticated) {
+            write(client_fd, "AUTH_REQUIRED\n", 14);
             continue;
         }
 

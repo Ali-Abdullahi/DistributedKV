@@ -104,6 +104,17 @@ int follower_loop(const char *host, const char *port) {
 
         printf("Follower: connected to leader %s:%s, registering...\n", host, port);
 
+        if (auth_token != NULL) {
+            char auth[256];
+            int alen = snprintf(auth, sizeof(auth), "AUTH %s\n", auth_token);
+            if (alen <= 0 || send(fd, auth, alen, 0) < 0) {
+                perror("send AUTH");
+                close(fd);
+                sleep(RECONNECT_DELAY_SEC);
+                continue;
+            }
+        }
+
         const char *reg = "REGISTER\n";
         if (send(fd, reg, strlen(reg), 0) < 0) {
             perror("send REGISTER");
